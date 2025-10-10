@@ -8,7 +8,6 @@ import ReactFlow, {
   useEdgesState,
   addEdge,
   Connection,
-  ConnectionMode,
   BackgroundVariant,
   MarkerType,
 } from 'reactflow';
@@ -88,33 +87,11 @@ export function GoalTreeCanvas() {
 
   const onConnect = useCallback(
     (params: Connection) => {
-      // Ensure arrows flow upward (Bottom-to-Top) while preserving the exact handles the user picked
-      // Determine which node is visually higher/lower using current node positions
-      const sourceNode = nodes.find((n) => n.id === params.source);
-      const targetNode = nodes.find((n) => n.id === params.target);
-
-      let lowerId = params.source;
-      let lowerHandle = params.sourceHandle;
-      let higherId = params.target;
-      let higherHandle = params.targetHandle;
-
-      if (sourceNode && targetNode) {
-        const sourceIsAboveTarget = sourceNode.position.y < targetNode.position.y;
-        if (sourceIsAboveTarget) {
-          // User dragged from an upper node to a lower node; flip to keep arrow pointing upward
-          lowerId = params.target;
-          lowerHandle = params.targetHandle;
-          higherId = params.source;
-          higherHandle = params.sourceHandle;
-        }
-      }
-
+      // Swap source and target so arrows always flow upward in BT layout
       const edge = {
         ...params,
-        source: lowerId,
-        target: higherId,
-        sourceHandle: lowerHandle,
-        targetHandle: higherHandle,
+        source: params.target,
+        target: params.source,
         type: 'smoothstep',
         animated: true,
         markerEnd: {
@@ -123,7 +100,7 @@ export function GoalTreeCanvas() {
       };
       setEdges((eds) => addEdge(edge, eds));
     },
-    [setEdges, nodes]
+    [setEdges]
   );
 
   const handleEditNode = useCallback(
@@ -316,7 +293,6 @@ export function GoalTreeCanvas() {
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
         nodeTypes={nodeTypes}
-        connectionMode={ConnectionMode.Loose}
         fitView
         className="bg-[hsl(var(--canvas-bg))]"
       >
