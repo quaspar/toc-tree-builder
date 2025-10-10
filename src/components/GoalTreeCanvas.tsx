@@ -17,6 +17,7 @@ import 'reactflow/dist/style.css';
 import GoalNode from './GoalNode';
 import CsfNode from './CsfNode';
 import ConditionNode from './ConditionNode';
+import AndNode from './AndNode';
 import { TreeToolbar } from './TreeToolbar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
@@ -25,6 +26,7 @@ const nodeTypes = {
   goal: GoalNode,
   csf: CsfNode,
   condition: ConditionNode,
+  and: AndNode,
 };
 
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
@@ -112,11 +114,12 @@ export function GoalTreeCanvas() {
   );
 
   const handleAddNode = useCallback(
-    (type: 'goal' | 'csf' | 'condition') => {
+    (type: 'goal' | 'csf' | 'condition' | 'and') => {
       const defaultLabels = {
         goal: 'New Goal',
         csf: 'New Critical Success Factor',
         condition: 'New Necessary Condition',
+        and: 'AND',
       };
 
       const newNode: Node = {

@@ -1,4 +1,4 @@
-import { Target, Star, CheckCircle2, Layers, Save, FolderOpen, Trash2 } from 'lucide-react';
+import { Target, Star, CheckCircle2, CircleDot, Layers, Save, FolderOpen, Trash2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -13,7 +13,7 @@ import {
 type TreeToolbarProps = {
   treeName: string;
   onTreeNameChange: (name: string) => void;
-  onAddNode: (type: 'goal' | 'csf' | 'condition') => void;
+  onAddNode: (type: 'goal' | 'csf' | 'condition' | 'and') => void;
   onAutoLayout: () => void;
   onSave: () => void;
   onLoad: (treeId: string) => void;
@@ -77,6 +77,15 @@ export function TreeToolbar({
             Condition
           </Button>
         </div>
+        <Button
+          onClick={() => onAddNode('and')}
+          size="sm"
+          variant="outline"
+          className="w-full h-8 text-xs border-accent text-accent hover:bg-accent hover:text-accent-foreground"
+        >
+          <CircleDot className="w-3.5 h-3.5 mr-1" />
+          AND
+        </Button>
       </div>
 
       <Button
