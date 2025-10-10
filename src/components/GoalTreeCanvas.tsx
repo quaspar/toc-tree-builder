@@ -88,10 +88,13 @@ export function GoalTreeCanvas() {
   const onConnect = useCallback(
     (params: Connection) => {
       // Swap source and target so arrows always flow upward in BT layout
+      // Also swap the handles to maintain correct connection points
       const edge = {
         ...params,
         source: params.target,
         target: params.source,
+        sourceHandle: params.targetHandle,
+        targetHandle: params.sourceHandle,
         type: 'smoothstep',
         animated: true,
         markerEnd: {
