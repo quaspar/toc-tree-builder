@@ -32,7 +32,7 @@ const nodeTypes = {
 const getLayoutedElements = (nodes: Node[], edges: Edge[]) => {
   const dagreGraph = new dagre.graphlib.Graph();
   dagreGraph.setDefaultEdgeLabel(() => ({}));
-  dagreGraph.setGraph({ rankdir: 'BT', ranksep: 100, nodesep: 80 });
+  dagreGraph.setGraph({ rankdir: 'TB', ranksep: 100, nodesep: 80 });
 
   nodes.forEach((node) => {
     dagreGraph.setNode(node.id, { width: 200, height: 100 });
@@ -87,11 +87,10 @@ export function GoalTreeCanvas() {
 
   const onConnect = useCallback(
     (params: Connection) => {
-      // Swap source and target so arrows always flow upward in BT layout
       const edge = {
         ...params,
-        source: params.target,
-        target: params.source,
+        // source: params.target,
+        // target: params.source,
         type: 'smoothstep',
         animated: true,
         markerEnd: {
@@ -297,9 +296,9 @@ export function GoalTreeCanvas() {
         className="bg-[hsl(var(--canvas-bg))]"
       >
         <Controls className="bg-card border border-border rounded-lg" />
-        <Background 
-          variant={BackgroundVariant.Dots} 
-          gap={20} 
+        <Background
+          variant={BackgroundVariant.Dots}
+          gap={20}
           size={1}
           className="bg-[hsl(var(--canvas-bg))]"
           color="hsl(var(--canvas-grid))"

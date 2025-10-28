@@ -20,13 +20,13 @@ const GoalNode = ({ id, data }: NodeProps<NodeData>) => {
       onDoubleClick={handleDoubleClick}
       className="px-6 py-4 rounded-xl border-2 border-primary bg-card shadow-[var(--shadow-node)] min-w-[200px] cursor-pointer hover:shadow-[var(--shadow-elevated)] transition-shadow"
     >
-      <Handle type="target" position={Position.Top} className="!bg-primary" />
+      <Handle type="source" position={Position.Top} className="!bg-primary" />
       <div className="flex items-center gap-2">
         <Target className="w-5 h-5 text-primary" />
         <div className="font-semibold text-primary">GOAL</div>
       </div>
       <div className="mt-2 text-sm text-foreground">{data.label}</div>
-      <Handle type="source" position={Position.Bottom} className="!bg-primary" />
+      <Handle type="target" position={Position.Bottom} className="!bg-primary" />
     </div>
   );
 };

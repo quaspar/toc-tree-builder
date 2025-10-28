@@ -16,13 +16,13 @@ const ConditionNode = ({ id, data }: NodeProps<NodeData>) => {
       onDoubleClick={handleDoubleClick}
       className="px-4 py-2.5 rounded-lg border border-success bg-card shadow-[var(--shadow-node)] min-w-[160px] cursor-pointer hover:shadow-[var(--shadow-elevated)] transition-shadow"
     >
-      <Handle type="target" position={Position.Top} className="!bg-success" />
+      <Handle type="source" position={Position.Top} className="!bg-success" />
       <div className="flex items-center gap-2">
         <CheckCircle2 className="w-4 h-4 text-success" />
         <div className="font-medium text-xs text-success">CONDITION</div>
       </div>
       <div className="mt-1 text-sm text-foreground">{data.label}</div>
-      <Handle type="source" position={Position.Bottom} className="!bg-success" />
+      <Handle type="target" position={Position.Bottom} className="!bg-success" />
     </div>
   );
 };
