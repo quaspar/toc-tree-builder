@@ -1,4 +1,4 @@
-import { Target, Star, CheckCircle2, CircleDot, Layers, Save, FolderOpen, Trash2 } from 'lucide-react';
+import { Target, Star, CheckCircle2, CircleDot, Layers, Save, FolderOpen, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,8 +18,11 @@ type TreeToolbarProps = {
   onSave: () => void;
   onLoad: (treeId: string) => void;
   onClear: () => void;
+  onExport: () => void;
   availableTrees: Array<{ id: string; name: string }>;
   isSaving: boolean;
+  isExporting: boolean;
+  hasTreeData: boolean;
 };
 
 export function TreeToolbar({
@@ -30,8 +33,11 @@ export function TreeToolbar({
   onSave,
   onLoad,
   onClear,
+  onExport,
   availableTrees,
   isSaving,
+  isExporting,
+  hasTreeData,
 }: TreeToolbarProps) {
   return (
     <div className="absolute top-4 left-4 z-10 flex flex-col gap-3 bg-card rounded-xl border border-border shadow-lg p-4 max-w-xs">
@@ -96,6 +102,17 @@ export function TreeToolbar({
       >
         <Layers className="w-3.5 h-3.5 mr-1.5" />
         Auto Layout
+      </Button>
+
+      <Button
+        onClick={onExport}
+        size="sm"
+        variant="outline"
+        disabled={!hasTreeData || isExporting}
+        className="h-8 text-xs"
+      >
+        <Download className="w-3.5 h-3.5 mr-1.5" />
+        {isExporting ? 'Exporting...' : 'Export CSV'}
       </Button>
 
       <div className="border-t border-border pt-3 space-y-2">

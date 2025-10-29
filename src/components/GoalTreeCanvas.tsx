@@ -21,6 +21,7 @@ import AndNode from './AndNode';
 import { TreeToolbar } from './TreeToolbar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { exportTreeToCSV } from '@/lib/exportUtils';
 
 const nodeTypes = {
   goal: GoalNode,
@@ -65,6 +66,7 @@ export function GoalTreeCanvas() {
   const [currentTreeId, setCurrentTreeId] = useState<string | null>(null);
   const [availableTrees, setAvailableTrees] = useState<Array<{ id: string; name: string }>>([]);
   const [isSaving, setIsSaving] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   // Load available trees on mount
   useEffect(() => {
@@ -283,6 +285,25 @@ export function GoalTreeCanvas() {
     }
   }, [setNodes, setEdges]);
 
+  const handleExport = useCallback(async () => {
+    if (nodes.length === 0) {
+      toast.error('No tree data to export');
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      exportTreeToCSV(nodes, edges, treeName);
+      toast.success('Tree exported successfully!');
+    } catch (error) {
+      console.error('Error exporting tree:', error);
+      toast.error('Failed to export tree');
+    } finally {
+      setIsExporting(false);
+    }
+  }, [nodes, edges, treeName]);
+
   return (
     <div className="w-full h-screen bg-[hsl(var(--canvas-bg))]">
       <ReactFlow
@@ -311,8 +332,11 @@ export function GoalTreeCanvas() {
           onSave={handleSave}
           onLoad={handleLoad}
           onClear={handleClear}
+          onExport={handleExport}
           availableTrees={availableTrees}
           isSaving={isSaving}
+          isExporting={isExporting}
+          hasTreeData={nodes.length > 0}
         />
       </ReactFlow>
     </div>
