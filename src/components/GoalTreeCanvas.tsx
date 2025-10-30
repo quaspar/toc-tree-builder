@@ -19,7 +19,6 @@ import CsfNode from './CsfNode';
 import ConditionNode from './ConditionNode';
 import AndNode from './AndNode';
 import { TreeToolbar } from './TreeToolbar';
-import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { exportTreeToCSV } from '@/lib/exportUtils';
 import {
@@ -69,8 +68,6 @@ export function GoalTreeCanvas() {
   const [nodes, setNodes, onNodesChange] = useNodesState([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [treeName, setTreeName] = useState('My Goal Tree');
-  const [currentTreeId, setCurrentTreeId] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
   const [isImporting, setIsImporting] = useState(false);
 
@@ -133,78 +130,7 @@ export function GoalTreeCanvas() {
     setEdges(layoutedEdges);
   }, [nodes, edges, setNodes, setEdges]);
 
-  const handleSave = async () => {
-    if (!treeName.trim()) {
-      toast.error('Please enter a tree name');
-      return;
-    }
 
-    setIsSaving(true);
-
-    try {
-      // Save or update tree
-      let treeId = currentTreeId;
-
-      if (currentTreeId) {
-        // Update existing tree
-        const { error: updateError } = await supabase
-          .from('trees')
-          .update({ name: treeName })
-          .eq('id', currentTreeId);
-
-        if (updateError) throw updateError;
-
-        // Delete existing nodes and edges
-        await supabase.from('edges').delete().eq('tree_id', currentTreeId);
-        await supabase.from('nodes').delete().eq('tree_id', currentTreeId);
-      } else {
-        // Create new tree
-        const { data: treeData, error: treeError } = await supabase
-          .from('trees')
-          .insert({ name: treeName, type: 'goal_tree' })
-          .select()
-          .single();
-
-        if (treeError) throw treeError;
-        treeId = treeData.id;
-        setCurrentTreeId(treeId);
-      }
-
-      // Save nodes
-      const nodeRecords = nodes.map((node) => ({
-        tree_id: treeId,
-        id: node.id,
-        type: node.type || 'condition',
-        text: node.data.label,
-        position_x: node.position.x,
-        position_y: node.position.y,
-      }));
-
-      if (nodeRecords.length > 0) {
-        const { error: nodesError } = await supabase.from('nodes').insert(nodeRecords);
-        if (nodesError) throw nodesError;
-      }
-
-      // Save edges
-      const edgeRecords = edges.map((edge) => ({
-        tree_id: treeId,
-        source_node_id: edge.source,
-        target_node_id: edge.target,
-      }));
-
-      if (edgeRecords.length > 0) {
-        const { error: edgesError } = await supabase.from('edges').insert(edgeRecords);
-        if (edgesError) throw edgesError;
-      }
-
-      toast.success('Tree saved successfully!');
-    } catch (error) {
-      console.error('Error saving tree:', error);
-      toast.error('Failed to save tree');
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleImport = useCallback(async () => {
     setIsImporting(true);
@@ -248,9 +174,8 @@ export function GoalTreeCanvas() {
       setNodes(importedNodes);
       setEdges(importedEdges);
 
-      // Update tree name and clear current tree ID
+      // Update tree name
       setTreeName(parseResult.data!.treeName);
-      setCurrentTreeId(null);
 
       toast.success('Tree imported successfully!');
     } catch (error) {
@@ -259,13 +184,12 @@ export function GoalTreeCanvas() {
     } finally {
       setIsImporting(false);
     }
-  }, [setNodes, setEdges, setTreeName, setCurrentTreeId, handleEditNode]);
+  }, [setNodes, setEdges, setTreeName, handleEditNode]);
 
   const handleClear = useCallback(() => {
     if (confirm('Are you sure you want to clear the canvas?')) {
       setNodes([]);
       setEdges([]);
-      setCurrentTreeId(null);
       setTreeName('My Goal Tree');
     }
   }, [setNodes, setEdges]);
@@ -314,11 +238,9 @@ export function GoalTreeCanvas() {
           onTreeNameChange={setTreeName}
           onAddNode={handleAddNode}
           onAutoLayout={handleAutoLayout}
-          onSave={handleSave}
           onImport={handleImport}
           onClear={handleClear}
           onExport={handleExport}
-          isSaving={isSaving}
           isExporting={isExporting}
           isImporting={isImporting}
           hasTreeData={nodes.length > 0}
