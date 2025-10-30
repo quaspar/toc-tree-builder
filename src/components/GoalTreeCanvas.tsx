@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import ReactFlow, {
   Node,
   Edge,
@@ -22,6 +22,12 @@ import { TreeToolbar } from './TreeToolbar';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { exportTreeToCSV } from '@/lib/exportUtils';
+import {
+  parseCSVImport,
+  readCSVFile,
+  reconstructTreeData,
+  BrowserFileInputAdapter
+} from '@/lib/importUtils';
 
 const nodeTypes = {
   goal: GoalNode,
@@ -64,28 +70,11 @@ export function GoalTreeCanvas() {
   const [edges, setEdges, onEdgesChange] = useEdgesState([]);
   const [treeName, setTreeName] = useState('My Goal Tree');
   const [currentTreeId, setCurrentTreeId] = useState<string | null>(null);
-  const [availableTrees, setAvailableTrees] = useState<Array<{ id: string; name: string }>>([]);
   const [isSaving, setIsSaving] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [isImporting, setIsImporting] = useState(false);
 
-  // Load available trees on mount
-  useEffect(() => {
-    loadAvailableTrees();
-  }, []);
 
-  const loadAvailableTrees = async () => {
-    const { data, error } = await supabase
-      .from('trees')
-      .select('id, name')
-      .order('created_at', { ascending: false });
-
-    if (error) {
-      console.error('Error loading trees:', error);
-      return;
-    }
-
-    setAvailableTrees(data || []);
-  };
 
   const onConnect = useCallback(
     (params: Connection) => {
@@ -209,7 +198,6 @@ export function GoalTreeCanvas() {
       }
 
       toast.success('Tree saved successfully!');
-      loadAvailableTrees();
     } catch (error) {
       console.error('Error saving tree:', error);
       toast.error('Failed to save tree');
@@ -218,63 +206,60 @@ export function GoalTreeCanvas() {
     }
   };
 
-  const handleLoad = async (treeId: string) => {
+  const handleImport = useCallback(async () => {
+    setIsImporting(true);
+
     try {
-      // Load tree
-      const { data: tree, error: treeError } = await supabase
-        .from('trees')
-        .select('*')
-        .eq('id', treeId)
-        .single();
+      // Use file input adapter to open file picker
+      const fileInputAdapter = new BrowserFileInputAdapter();
+      const file = await fileInputAdapter.openFilePicker();
 
-      if (treeError) throw treeError;
+      if (!file) {
+        // User cancelled file selection
+        setIsImporting(false);
+        return;
+      }
 
-      setTreeName(tree.name);
-      setCurrentTreeId(tree.id);
+      // Read the CSV file
+      const fileResult = await readCSVFile(file);
 
-      // Load nodes
-      const { data: nodeData, error: nodesError } = await supabase
-        .from('nodes')
-        .select('*')
-        .eq('tree_id', treeId);
+      if (!fileResult.success) {
+        toast.error(fileResult.error || 'Failed to read file');
+        setIsImporting(false);
+        return;
+      }
 
-      if (nodesError) throw nodesError;
+      // Parse the CSV content
+      const parseResult = parseCSVImport(fileResult.content!);
 
-      const loadedNodes: Node[] = (nodeData || []).map((node) => ({
-        id: node.id,
-        type: node.type,
-        position: { x: node.position_x, y: node.position_y },
-        data: { label: node.text, onEdit: handleEditNode },
-      }));
+      if (!parseResult.success) {
+        toast.error(parseResult.error || 'Failed to parse CSV file');
+        setIsImporting(false);
+        return;
+      }
 
-      // Load edges
-      const { data: edgeData, error: edgesError } = await supabase
-        .from('edges')
-        .select('*')
-        .eq('tree_id', treeId);
+      // Reconstruct tree data with edit handlers
+      const { nodes: importedNodes, edges: importedEdges } = reconstructTreeData(
+        parseResult.data!,
+        handleEditNode
+      );
 
-      if (edgesError) throw edgesError;
+      // Update canvas with imported data
+      setNodes(importedNodes);
+      setEdges(importedEdges);
 
-      const loadedEdges: Edge[] = (edgeData || []).map((edge) => ({
-        id: edge.id,
-        source: edge.source_node_id,
-        target: edge.target_node_id,
-        type: 'smoothstep',
-        animated: true,
-        markerEnd: {
-          type: MarkerType.ArrowClosed,
-        },
-      }));
+      // Update tree name and clear current tree ID
+      setTreeName(parseResult.data!.treeName);
+      setCurrentTreeId(null);
 
-      setNodes(loadedNodes);
-      setEdges(loadedEdges);
-
-      toast.success('Tree loaded successfully!');
+      toast.success('Tree imported successfully!');
     } catch (error) {
-      console.error('Error loading tree:', error);
-      toast.error('Failed to load tree');
+      console.error('Error importing tree:', error);
+      toast.error('Failed to import tree data');
+    } finally {
+      setIsImporting(false);
     }
-  };
+  }, [setNodes, setEdges, setTreeName, setCurrentTreeId, handleEditNode]);
 
   const handleClear = useCallback(() => {
     if (confirm('Are you sure you want to clear the canvas?')) {
@@ -330,12 +315,12 @@ export function GoalTreeCanvas() {
           onAddNode={handleAddNode}
           onAutoLayout={handleAutoLayout}
           onSave={handleSave}
-          onLoad={handleLoad}
+          onImport={handleImport}
           onClear={handleClear}
           onExport={handleExport}
-          availableTrees={availableTrees}
           isSaving={isSaving}
           isExporting={isExporting}
+          isImporting={isImporting}
           hasTreeData={nodes.length > 0}
         />
       </ReactFlow>

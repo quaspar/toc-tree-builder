@@ -1,27 +1,26 @@
-import { Target, Star, CheckCircle2, CircleDot, Layers, Save, FolderOpen, Trash2, Download } from 'lucide-react';
+import { Target, Star, CheckCircle2, CircleDot, Layers, Save, Upload, Trash2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from '@/components/ui/tooltip';
 
-type TreeToolbarProps = {
+export type TreeToolbarProps = {
   treeName: string;
   onTreeNameChange: (name: string) => void;
   onAddNode: (type: 'goal' | 'csf' | 'condition' | 'and') => void;
   onAutoLayout: () => void;
   onSave: () => void;
-  onLoad: (treeId: string) => void;
+  onImport: () => void;
   onClear: () => void;
   onExport: () => void;
-  availableTrees: Array<{ id: string; name: string }>;
   isSaving: boolean;
   isExporting: boolean;
+  isImporting: boolean;
   hasTreeData: boolean;
 };
 
@@ -31,12 +30,12 @@ export function TreeToolbar({
   onAddNode,
   onAutoLayout,
   onSave,
-  onLoad,
+  onImport,
   onClear,
   onExport,
-  availableTrees,
   isSaving,
   isExporting,
+  isImporting,
   hasTreeData,
 }: TreeToolbarProps) {
   return (
@@ -126,23 +125,27 @@ export function TreeToolbar({
           {isSaving ? 'Saving...' : 'Save Tree'}
         </Button>
 
-        {availableTrees.length > 0 && (
-          <div className="space-y-1.5">
-            <Label htmlFor="load-tree" className="text-xs font-medium">Load Tree</Label>
-            <Select onValueChange={onLoad}>
-              <SelectTrigger id="load-tree" className="h-8 text-xs">
-                <SelectValue placeholder="Select a tree..." />
-              </SelectTrigger>
-              <SelectContent>
-                {availableTrees.map((tree) => (
-                  <SelectItem key={tree.id} value={tree.id} className="text-xs">
-                    {tree.name}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-        )}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                onClick={onImport}
+                size="sm"
+                variant="outline"
+                disabled={hasTreeData || isImporting}
+                className="w-full h-8 text-xs"
+              >
+                <Upload className="w-3.5 h-3.5 mr-1.5" />
+                {isImporting ? 'Importing...' : 'Import from File'}
+              </Button>
+            </TooltipTrigger>
+            {hasTreeData && (
+              <TooltipContent>
+                <p>Clear canvas first to import a file</p>
+              </TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
 
         <Button
           onClick={onClear}

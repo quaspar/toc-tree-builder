@@ -1,6 +1,6 @@
 # Implementation Plan
 
-- [ ] 1. Create CSV import utility functions with dependency injection
+- [x] 1. Create CSV import utility functions with dependency injection
   - Create `src/lib/importUtils.ts` with pure CSV parsing functions
   - Implement `parseCSVImport` function that takes CSV content string and returns structured data
   - Add proper CSV unescaping for quoted values and special characters
@@ -9,7 +9,7 @@
   - Create TypeScript interfaces for ImportData, CSVImportResult, and adapter patterns
   - _Requirements: 1.2, 1.3, 1.4, 5.1, 5.2, 5.3_
 
-- [ ] 2. Create browser API adapters for testability
+- [x] 2. Create browser API adapters for testability
   - Add FileReaderAdapter interface and BrowserFileReaderAdapter implementation to `src/lib/importUtils.ts`
   - Add FileInputAdapter interface and BrowserFileInputAdapter implementation
   - Implement file type validation (.csv extension check)
@@ -17,7 +17,7 @@
   - Handle file reading errors and return structured results
   - _Requirements: 1.1, 4.1, 4.3_
 
-- [ ] 3. Create tree data reconstruction utility
+- [x] 3. Create tree data reconstruction utility
   - Add `reconstructTreeData` function to `src/lib/importUtils.ts`
   - Convert CSV data back to ReactFlow Node objects with proper typing and positioning
   - Convert CSV data back to ReactFlow Edge objects with markerEnd and animation properties
@@ -26,7 +26,7 @@
   - Validate node types and handle unknown types gracefully
   - _Requirements: 1.4, 1.5, 4.4_
 
-- [ ] 4. Add import functionality to GoalTreeCanvas component
+- [x] 4. Add import functionality to GoalTreeCanvas component
   - Add import state management (isImporting) to track import process
   - Implement handleImport callback function that orchestrates the import process
   - Remove handleLoad function and availableTrees state management
@@ -37,7 +37,7 @@
   - Pass import handler and state to TreeToolbar component instead of load props
   - _Requirements: 1.1, 1.5, 1.6, 4.2, 4.3, 4.4, 5.4, 5.5_
 
-- [ ] 5. Update TreeToolbar component to replace load tree with import
+- [x] 5. Update TreeToolbar component to replace load tree with import
   - Remove onLoad prop and availableTrees prop from TreeToolbarProps interface
   - Remove "Load Tree" select dropdown section from component JSX
   - Add onImport and isImporting props to TreeToolbarProps interface
@@ -48,7 +48,7 @@
   - Maintain consistent styling with existing toolbar buttons (size="sm", variant="outline")
   - _Requirements: 2.1, 2.2, 2.3, 2.4, 2.5, 3.1, 3.2, 3.3, 3.4, 3.5_
 
-- [ ] 6. Add unit tests for import utilities
+- [x] 6. Add unit tests for import utilities
   - Create `src/lib/__tests__/importUtils.test.ts`
   - Write tests for CSV parsing with various valid tree structures
   - Test proper unquoting and unescaping of special characters
@@ -59,7 +59,7 @@
   - Create mock adapters for FileReader and FileInput for isolated testing
   - _Requirements: 1.2, 1.3, 1.4, 4.1, 4.2, 4.4, 5.1, 5.2_
 
-- [ ] 7. Add integration tests for import flow
+- [x] 7. Add integration tests for import flow
   - Create integration test file for complete import functionality
   - Test import process from button click through canvas population using mock adapters
   - Verify error handling scenarios and user feedback with toast notifications
