@@ -1,3 +1,12 @@
+# toc-tree-builder
+
+| App | Folder | Notes |
+| --- | --- | --- |
+| **Current Reality Tree builder** | [`crt/`](crt/README.md) | Vite + TypeScript, localStorage, multiple trees. Deployed to GitHub Pages by `.github/workflows/crt-pages.yml`. |
+| Goal tree builder (Lovable) | repository root | Original Lovable project, described below. |
+
+---
+
 # Welcome to your Lovable project
 
 ## Project info
