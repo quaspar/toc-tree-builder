@@ -2,7 +2,7 @@
 
 | App | Folder | Notes |
 | --- | --- | --- |
-| **Current Reality Tree builder** | [`crt/`](crt/README.md) | Vite + TypeScript, localStorage, multiple trees. Deployed to GitHub Pages by `.github/workflows/crt-pages.yml`. |
+| **Current Reality Tree builder** | [`crt/`](crt/README.md) | Vite + TypeScript, localStorage, multiple trees. Deployed to Vercel (project root `crt/`). |
 | Goal tree builder (Lovable) | repository root | Original Lovable project, described below. |
 
 ---

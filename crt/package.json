@@ -8,6 +8,7 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "build:single": "tsc --noEmit && vite build --mode single",
+    "build:vercel": "npm run build && vite build --mode single && cp dist-single/index.html dist/crt.html",
     "preview": "vite preview",
     "typecheck": "tsc --noEmit",
     "test": "vitest run",

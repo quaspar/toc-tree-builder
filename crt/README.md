@@ -4,8 +4,8 @@ A frontend-only editor for **Current Reality Trees** (CRT), one of the logical t
 Theory of Constraints Thinking Process. There is no backend: every tree is stored in the
 browser's `localStorage`.
 
-**Live app:** https://quaspar.github.io/toc-tree-builder/
-**Offline single file:** https://quaspar.github.io/toc-tree-builder/crt.html (save it and open from disk)
+**Live app:** hosted on Vercel (project `crt-builder`). The offline single-file version is served at
+`/crt.html`: save it and open it from disk.
 
 ## Features
 
@@ -50,6 +50,7 @@ npm run dev          # http://localhost:5173
 | `npm test`             | Unit tests (Vitest + jsdom)                                      |
 | `npm run test:e2e`     | Browser tests (Playwright) against the built site; build first   |
 | `npm run check`        | Type-check, unit tests and build                                 |
+| `npm run build:vercel` | What Vercel runs: site build plus `dist/crt.html` offline copy    |
 
 ### Layout
 
@@ -66,6 +67,9 @@ tests/e2e       Playwright
 
 ## Deployment
 
-`.github/workflows/crt-pages.yml` runs type-check, unit and e2e tests on every push and PR that
-touches `crt/`. On `main` it publishes `dist/` (plus the single-file `crt.html`) to GitHub Pages.
-In the repository settings, **Pages → Build and deployment → Source** must be set to **GitHub Actions**.
+Vercel, via its GitHub integration. The Vercel project `crt-builder` has **Root Directory = `crt`**
+and uses `crt/vercel.json` (install `npm ci`, build `npm run build:vercel`, output `dist/`).
+`build:vercel` builds the site and adds the single-file offline build as `dist/crt.html`.
+Every push to `main` deploys to production; other branches and pull requests get preview URLs.
+
+`.github/workflows/crt-ci.yml` runs type-check, unit and e2e tests on pushes and PRs that touch `crt/`.
