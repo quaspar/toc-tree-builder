@@ -1,0 +1,36 @@
+name: CRT app – tests
+
+# Deployment is handled by Vercel's Git integration (project root: crt/).
+on:
+  push:
+    branches: [main]
+    paths: ['crt/**', '.github/workflows/crt-ci.yml']
+  pull_request:
+    paths: ['crt/**', '.github/workflows/crt-ci.yml']
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+defaults:
+  run:
+    working-directory: crt
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: crt/package-lock.json
+      - run: npm ci
+      - run: npm run typecheck
+      - run: npm test
+      - run: npm run build:vercel
+      - name: End-to-end tests
+        run: |
+          npx playwright install --with-deps chromium
+          npm run test:e2e
