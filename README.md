@@ -1,82 +1,74 @@
-# toc-tree-builder
+# Current Reality Tree builder
 
-| App | Folder | Notes |
-| --- | --- | --- |
-| **Current Reality Tree builder** | [`crt/`](crt/README.md) | Vite + TypeScript, localStorage, multiple trees. Deployed to Vercel (project root `crt/`). |
-| Goal tree builder (Lovable) | repository root | Original Lovable project, described below. |
+A frontend-only editor for **Current Reality Trees** (CRT), one of the logical trees of the
+Theory of Constraints Thinking Process. There is no backend: every tree is stored in the
+browser's `localStorage`.
 
----
+**Live app:** https://crt-builder-ashy.vercel.app/
+**Offline single file:** https://crt-builder-ashy.vercel.app/crt.html (save it and open from disk)
 
-# Welcome to your Lovable project
+## Features
 
-## Project info
+- Pannable/zoomable canvas. Double-click to add an entity; drag an entity's bottom dot to add a
+  cause, its top dot to add an effect (drop on another entity to connect).
+- Entity types: UDE, entity, assumption; automatic numbering; root causes detected automatically;
+  mark the core problem.
+- Logical AND (ellipse) between arrows into the same effect.
+- IF … AND … THEN … reading of every connection.
+- Categories of Legitimate Reservation per arrow and per entity, with a "Needs attention" list.
+- Root-cause overview ranked by UDE reach (70% rule of thumb), with highlight of what a root reaches.
+- Undo/redo, bottom-up auto-layout (loops tolerated), box select.
+- Export JSON / SVG / PNG, import JSON.
+- **Several trees.** The *☰ Trees* panel (key `T`) lists all trees with size and last edit. You
+  can search, open, rename, duplicate and delete them (deleting can be undone), and back up every
+  tree in one file. Each tree keeps its own viewport and undo history.
+  `#tree=<id>` in the URL links to a specific tree, and open tabs stay in sync.
 
-**URL**: https://lovable.dev/projects/850ddd74-df0f-439b-a44a-b54eaab4309d
+## Storage
 
-## How can I edit this code?
+Data lives under the localStorage key `crt-builder-v1` with the shape
+`{ trees: { [id]: Tree }, currentId }`. This is exactly the format of the original single-file
+`crt.html`, so JSON exports from either version import into the other. Storage is per origin:
+trees created in a `file://` copy are not visible on the hosted site (and vice versa). Use
+*Export all* there and *Import* here to move them.
 
-There are several ways of editing your application.
+If the stored data ever can't be parsed, a copy is kept under `crt-builder-v1-unreadable-<timestamp>`
+instead of being overwritten.
 
-**Use Lovable**
+## Development
 
-Simply visit the [Lovable Project](https://lovable.dev/projects/850ddd74-df0f-439b-a44a-b54eaab4309d) and start prompting.
-
-Changes made via Lovable will be committed automatically to this repo.
-
-**Use your preferred IDE**
-
-If you want to work locally using your own IDE, you can clone this repo and push changes. Pushed changes will also be reflected in Lovable.
-
-The only requirement is having Node.js & npm installed - [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating)
-
-Follow these steps:
-
-```sh
-# Step 1: Clone the repository using the project's Git URL.
-git clone <YOUR_GIT_URL>
-
-# Step 2: Navigate to the project directory.
-cd <YOUR_PROJECT_NAME>
-
-# Step 3: Install the necessary dependencies.
-npm i
-
-# Step 4: Start the development server with auto-reloading and an instant preview.
-npm run dev
+```bash
+npm install
+npm run dev          # http://localhost:5173
 ```
 
-**Edit a file directly in GitHub**
+| Script                 | What it does                                                     |
+| ---------------------- | ---------------------------------------------------------------- |
+| `npm run build`        | Type-check and build the site into `dist/`                       |
+| `npm run build:single` | Build one self-contained `dist-single/index.html` (works offline) |
+| `npm test`             | Unit tests (Vitest + jsdom)                                      |
+| `npm run test:e2e`     | Browser tests (Playwright) against the built site; build first   |
+| `npm run check`        | Type-check, unit tests and build                                 |
+| `npm run build:vercel` | What Vercel runs: site build plus `dist/crt.html` offline copy    |
 
-- Navigate to the desired file(s).
-- Click the "Edit" button (pencil icon) at the top right of the file view.
-- Make your changes and commit the changes.
+### Layout
 
-**Use GitHub Codespaces**
+```
+src/
+  model/        pure logic, no DOM: types, tree ops, analysis, layout, geometry, import/export,
+                TreeRepository (all localStorage access)
+  app/          UI: App (state, history, SVG rendering, viewport), inspector, library panel,
+                pointer/keyboard interaction, SVG/PNG export
+  main.ts       wiring
+tests/unit      Vitest
+tests/e2e       Playwright
+```
 
-- Navigate to the main page of your repository.
-- Click on the "Code" button (green button) near the top right.
-- Select the "Codespaces" tab.
-- Click on "New codespace" to launch a new Codespace environment.
-- Edit files directly within the Codespace and commit and push your changes once you're done.
+## Deployment
 
-## What technologies are used for this project?
+Vercel, via its GitHub integration. The Vercel project `crt-builder` builds the repository root
+using `vercel.json` (install `npm ci`, build `npm run build:vercel`, output `dist/`).
+`build:vercel` builds the site and adds the single-file offline build as `dist/crt.html`.
+Every push to `main` deploys to production; other branches and pull requests get preview URLs.
 
-This project is built with:
-
-- Vite
-- TypeScript
-- React
-- shadcn-ui
-- Tailwind CSS
-
-## How can I deploy this project?
-
-Simply open [Lovable](https://lovable.dev/projects/850ddd74-df0f-439b-a44a-b54eaab4309d) and click on Share -> Publish.
-
-## Can I connect a custom domain to my Lovable project?
-
-Yes, you can!
-
-To connect a domain, navigate to Project > Settings > Domains and click Connect Domain.
-
-Read more here: [Setting up a custom domain](https://docs.lovable.dev/features/custom-domain#custom-domain)
+`.github/workflows/ci.yml` runs type-check, unit and e2e tests on every push to `main` and every pull request.

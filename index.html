@@ -1,24 +1,93 @@
 <!doctype html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TOC Goal Tree Builder</title>
-    <meta name="description" content="Build Theory of Constraints Goal Trees with automatic layout and persistence" />
-    <meta name="author" content="Lovable" />
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="Build Current Reality Trees (Theory of Constraints) in your browser. No account, no server: trees are stored locally.">
+<title>Current Reality Tree</title>
+<link rel="icon" href="./favicon.svg" type="image/svg+xml">
+</head>
+<body>
+<header>
+  <span class="brand">Current Reality Tree</span>
+  <button id="bTrees" title="Show all trees (T)">☰ Trees <span class="count" id="treeCount">1</span></button>
+  <input type="text" id="treeName" placeholder="Tree name" title="Rename tree" aria-label="Tree name">
+  <span class="sep"></span>
+  <button id="bAddUde" class="primary" title="Add undesirable effect (U)">+ UDE</button>
+  <button id="bAddEnt" title="Add entity (N)">+ Entity</button>
+  <button id="bAddAsm" title="Add assumption">+ Assumption</button>
+  <span class="sep"></span>
+  <button id="bUndo" title="Undo (Ctrl+Z)">Undo</button>
+  <button id="bRedo" title="Redo (Ctrl+Shift+Z)">Redo</button>
+  <button id="bLayout" title="Arrange tree bottom-up">Auto-layout</button>
+  <span class="sep"></span>
+  <button id="bExpJson" title="Download this tree as JSON">Export</button>
+  <button id="bImpJson" title="Load one or more trees from a JSON file">Import</button>
+  <button id="bExpSvg">SVG</button>
+  <button id="bExpPng">PNG</button>
+  <button id="bHelp">Help</button>
+  <input type="file" id="fileIn" accept=".json,application/json" hidden>
+</header>
+<main>
+  <div id="canvasWrap">
+    <svg id="svg" xmlns="http://www.w3.org/2000/svg">
+      <defs id="defs">
+        <marker id="arw" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="mk" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="arwSel" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="10" markerHeight="10" markerUnits="userSpaceOnUse" orient="auto"><path class="mk-sel" d="M0,0 L10,5 L0,10 z"/></marker>
+        <marker id="arwWarn" viewBox="0 0 10 10" refX="9.5" refY="5" markerWidth="9" markerHeight="9" markerUnits="userSpaceOnUse" orient="auto"><path class="mk-warn" d="M0,0 L10,5 L0,10 z"/></marker>
+      </defs>
+      <g id="vp"></g>
+      <g id="ov"></g>
+    </svg>
+    <div id="hint">Double-click canvas: new entity · Drag the top dot to an effect, bottom dot to a cause (or onto empty space to create one) · Shift-drag: box select · Wheel: zoom</div>
+    <div id="zoomCtl"><span id="status" role="status"></span><span id="zoomPct">100%</span><button id="bZoomOut" aria-label="Zoom out">−</button><button id="bZoomIn" aria-label="Zoom in">+</button><button id="bFit">Fit</button></div>
 
-    <meta property="og:title" content="TOC Goal Tree Builder" />
-    <meta property="og:description" content="Build Theory of Constraints Goal Trees with automatic layout and persistence" />
-    <meta property="og:type" content="website" />
-    <meta property="og:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
+    <section id="library" aria-label="Trees" aria-hidden="true">
+      <div class="lhead"><h3>Your trees</h3><button id="bLibClose" title="Close (Esc)" aria-label="Close">×</button></div>
+      <div class="ltools">
+        <input type="text" id="libSearch" placeholder="Search trees…" aria-label="Search trees">
+        <button id="bNewTree" class="primary">+ New tree</button>
+        <button id="bExampleTree" title="Add a copy of the worked example">+ Example</button>
+        <button id="bLibImport">Import…</button>
+        <button id="bExpAll" title="Download every tree in one backup file">Export all</button>
+      </div>
+      <ul id="libList"></ul>
+      <div class="lfoot" id="libFoot"></div>
+    </section>
+  </div>
+  <aside id="insp"></aside>
+</main>
 
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:site" content="@lovable_dev" />
-    <meta name="twitter:image" content="https://lovable.dev/opengraph-image-p98pqg.png" />
-  </head>
+<div id="toast" role="status"><span id="toastMsg"></span><button id="toastBtn" hidden></button></div>
 
-  <body>
-    <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
-  </body>
+<div id="modal"><div class="box">
+  <h2>Current Reality Tree</h2>
+  <p>A CRT explains how a few root causes produce the undesirable effects (UDEs) you observe. It is read bottom-up as sufficiency logic: <b>IF</b> cause <b>THEN</b> effect. An ellipse across several arrows means the causes are only sufficient <b>together</b> (logical AND).</p>
+  <h3>Suggested process</h3>
+  <ol>
+    <li>List 5–10 UDEs: real, observable, negative effects stated as present-tense facts.</li>
+    <li>Connect them: for each UDE ask “why does this exist?” and add causes below it (drag the bottom dot).</li>
+    <li>Read every connection aloud (the inspector shows the IF…THEN sentence) and scrutinize it with the Categories of Legitimate Reservation.</li>
+    <li>Where one cause is not enough, add the missing cause and tie the arrows with an AND.</li>
+    <li>Keep going down until you reach entities with no causes inside your span of control: the root causes.</li>
+    <li>The overview lists every root cause and how many UDEs it reaches. The core problem is usually the one reaching most UDEs (a common rule of thumb is ≥ 70%). Mark it as core.</li>
+  </ol>
+  <h3>Mouse &amp; keyboard</h3>
+  <ul>
+    <li>Double-click empty canvas: new entity. Double-click an entity: edit its text.</li>
+    <li>Drag an entity to move it; drag empty canvas to pan; wheel to zoom.</li>
+    <li>Top dot → drop on an effect. Bottom dot → drop on a cause. Drop on empty space to create the new entity there.</li>
+    <li>Click an arrow to select it; tick other incoming arrows to make them an AND group.</li>
+    <li><kbd>Shift</kbd>+click to multi-select, <kbd>Shift</kbd>+drag to box select.</li>
+    <li><kbd>Del</kbd> delete · <kbd>Ctrl/⌘ Z</kbd> undo · <kbd>Ctrl/⌘ Shift Z</kbd> redo · <kbd>N</kbd> entity · <kbd>U</kbd> UDE · <kbd>F</kbd> fit · <kbd>T</kbd> trees · <kbd>Esc</kbd> deselect</li>
+  </ul>
+  <h3>Several trees</h3>
+  <p>Open <b>☰ Trees</b> (or press <kbd>T</kbd>) to see every tree you have, search them, and create, open, rename, duplicate or delete trees. Each tree keeps its own zoom, position and undo history while you switch. The address bar links to the open tree (<code>#tree=…</code>), so you can bookmark a tree or keep different trees open in different tabs; tabs stay in sync.</p>
+  <h3>Storage</h3>
+  <p>Trees are saved automatically in this browser's localStorage. Nothing is sent to a server. Storage belongs to this site and this browser, so another browser or computer starts empty. Use <b>Export all</b> for backups and <b>Import</b> to move trees between machines. Trees made with the offline <code>crt.html</code> file live in that file's own storage: export them there and import them here.</p>
+  <div class="row"><button id="bCloseHelp" class="primary">Close</button></div>
+</div></div>
+
+<script type="module" src="./src/main.ts"></script>
+</body>
 </html>

@@ -1,20 +1,14 @@
-name: CRT app – tests
+name: Tests
 
-# Deployment is handled by Vercel's Git integration (project root: crt/).
+# Deployment is handled by Vercel's Git integration.
 on:
   push:
     branches: [main]
-    paths: ['crt/**', '.github/workflows/crt-ci.yml']
   pull_request:
-    paths: ['crt/**', '.github/workflows/crt-ci.yml']
   workflow_dispatch:
 
 permissions:
   contents: read
-
-defaults:
-  run:
-    working-directory: crt
 
 jobs:
   test:
@@ -25,7 +19,6 @@ jobs:
         with:
           node-version: 22
           cache: npm
-          cache-dependency-path: crt/package-lock.json
       - run: npm ci
       - run: npm run typecheck
       - run: npm test
